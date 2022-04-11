@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/config"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/db"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/logger"
 )
 
@@ -20,6 +21,10 @@ func main() {
 	// Set logger
 	logger.NewLogger(cfg)
 	defer logger.Close()
+	//
+
+	// Connect to DB
+	db.NewPsqlDB(cfg)
 	//
 
 }
