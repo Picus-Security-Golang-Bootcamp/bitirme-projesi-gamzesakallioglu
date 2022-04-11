@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/customer"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/user"
+
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/config"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/db"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/logger"
@@ -24,7 +27,14 @@ func main() {
 	//
 
 	// Connect to DB
-	db.NewPsqlDB(cfg)
+	DB := db.NewPsqlDB(cfg)
 	//
+
+	//User Repository
+	userRepo := user.NewRepository(DB)
+	userRepo.Migration()
+
+	customerRepo := customer.NewRepository(DB)
+	customerRepo.Migration()
 
 }
