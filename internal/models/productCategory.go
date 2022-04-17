@@ -14,4 +14,8 @@ type ProductCategory struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	Name        *string        `gorm:"unique"`
 	Description string
+	IsParent    bool
+	ParentID    string
 }
+
+type ProductCategories []ProductCategory
