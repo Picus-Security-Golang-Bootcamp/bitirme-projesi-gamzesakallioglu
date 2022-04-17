@@ -8,6 +8,7 @@ import (
 
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/auth"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/customer"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/productCategory"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/user"
 	"github.com/gin-gonic/gin"
 
@@ -86,6 +87,11 @@ func main() {
 	authRepo := auth.NewAuthRepository(DB)
 	authService := auth.NewAuthService(authRepo)
 	auth.NewAuthHandler(rootRouter, cfg, authService)
+
+	productCategoryRepo := productCategory.NewRepository(DB)
+	productCategoryRepo.Migration()
+	productCategoryService := productCategory.NewProductCategoryService(productCategoryRepo)
+	productCategory.NewProductCategoryHandler(rootRouter, cfg, productCategoryService)
 
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
