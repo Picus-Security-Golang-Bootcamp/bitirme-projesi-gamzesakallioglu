@@ -10,9 +10,10 @@ import (
 
 type Repository interface {
 	GetProductCategoryByName(ctx context.Context, name *string) (*models.ProductCategory, error)
-	GetAllProductCategories(ctx context.Context, pagesize int, offset int, sorting string) (*models.ProductCategories, int64)
-	//CheckProductCategoryExistsByName(ctx context.Context, name *string) *models.ProductCategory
+	GetAllProductCategories(ctx context.Context, pagesize int, page int, sorting string) (*models.ProductCategories, int64)
 	CreateProductCategoryForBulk(ctx context.Context, category *models.ProductCategory) error
+	DeleteProductCategoryByID(ctx context.Context, id *string) error
+	GetProductCategoryByID(ctx context.Context, id *string) (*models.ProductCategory, error)
 	Migration()
 }
 
@@ -29,13 +30,21 @@ func (b *productCategoryRepository) Migration() {
 	b.db.AutoMigrate(&models.ProductCategory{})
 }
 
-/*func (p *productCategoryRepository) CheckProductCategoryExistsByName(ctx context.Context, name *string) *models.ProductCategory {
-	var category *models.ProductCategory
-	if err := p.db.WithContext(ctx).Where("name = ?", *name).First(&category).Error; err != nil {
-		return nil
+func (p *productCategoryRepository) DeleteProductCategoryByID(ctx context.Context, id *string) error {
+
+	if err := p.db.Where("id = ?", id).Delete(&models.ProductCategory{}).Error; err != nil {
+		return err
 	}
-	return category
-}*/
+	return nil
+}
+
+func (p *productCategoryRepository) GetProductCategoryByID(ctx context.Context, id *string) (*models.ProductCategory, error) {
+	var category *models.ProductCategory
+	if err := p.db.WithContext(ctx).Where("id = ?", id).First(&category).Error; err != nil {
+		return nil, err
+	}
+	return category, nil
+}
 
 func (p *productCategoryRepository) GetProductCategoryByName(ctx context.Context, name *string) (*models.ProductCategory, error) {
 	var category *models.ProductCategory
@@ -61,10 +70,15 @@ func (p *productCategoryRepository) CreateProductCategoryForBulk(ctx context.Con
 
 }
 
-func (p *productCategoryRepository) GetAllProductCategories(ctx context.Context, pagesize int, offset int, sorting string) (*models.ProductCategories, int64) {
+func (p *productCategoryRepository) GetAllProductCategories(ctx context.Context, pagesize int, page int, sorting string) (*models.ProductCategories, int64) {
 
 	var productCategories *models.ProductCategories
 	var totalcount int64
+
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * pagesize
 	//p.db.Offset(offset).Limit(pagesize).Order(sorting).Find(&productCategories).Count(&totalcount)
 
 	sqlQuery := fmt.Sprintf(`SELECT id,name,parent_id,
@@ -74,7 +88,7 @@ func (p *productCategoryRepository) GetAllProductCategories(ctx context.Context,
 		else parent_id
 		end
 	) AS order_parent
-FROM     product_categories
+FROM     product_categories where deleted_at IS NULL 
 ORDER BY order_parent, parent_id offset %v limit %v`, offset, pagesize)
 
 	p.db.Raw(sqlQuery).Scan(&productCategories).Count(&totalcount)

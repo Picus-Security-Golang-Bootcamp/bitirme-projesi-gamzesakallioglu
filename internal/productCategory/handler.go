@@ -28,10 +28,23 @@ func NewProductCategoryHandler(r *gin.RouterGroup, cfg *config.Config, service S
 	productCategoryHandler := productCategoryHandler{cfg: cfg, service: service}
 
 	r.POST("/productCategories", mwUserAdmin.AuthMiddleware(cfg.JWTConfig.SecretKey), productCategoryHandler.createBulkProductCategories)
-	r.GET("/productCategories", productCategoryHandler.getAllProductCategories)
+	r.GET("/productCategories", productCategoryHandler.GetAllProductCategories)
+	r.DELETE("/productCategories/:id", mwUserAdmin.AuthMiddleware(cfg.JWTConfig.SecretKey), productCategoryHandler.deleteProductCategoryByID)
 }
 
-func (p productCategoryHandler) createBulkProductCategories(c *gin.Context) {
+func (p *productCategoryHandler) deleteProductCategoryByID(c *gin.Context) {
+
+	id := c.Param("id")
+	if len(id) <= 0 {
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "id cannot be null", nil)))
+		return
+	}
+
+	p.service.DeleteProductCategoryByID(c.Request.Context(), &id)
+
+}
+
+func (p *productCategoryHandler) createBulkProductCategories(c *gin.Context) {
 	// File is going to readed and upserted into db
 	// If a record exists in db with same name -> update
 	// If not -> insert
@@ -77,7 +90,7 @@ func (p productCategoryHandler) createBulkProductCategories(c *gin.Context) {
 	c.String(http.StatusOK, "File's readed and inserted into database")
 }
 
-func (p *productCategoryHandler) getAllProductCategories(c *gin.Context) {
+func (p *productCategoryHandler) GetAllProductCategories(c *gin.Context) {
 
 	page, pageSize := pagination.GetPaginationParametersFromRequest(c)
 

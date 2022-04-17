@@ -18,6 +18,8 @@ type Product struct {
 	StockNumber int
 	StockCode   string
 	Description string
-	CategoryId  [16]byte
+	CategoryID  string
 	Category    ProductCategory
 }
+
+type Products []Product
