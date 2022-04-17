@@ -1,13 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
+	"time"
 
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/auth"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/customer"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/user"
+	"github.com/gin-gonic/gin"
 
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/config"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/db"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/graceful"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/logger"
 )
 
@@ -30,11 +36,70 @@ func main() {
 	DB := db.NewPsqlDB(cfg)
 	//
 
+	// Gin - Http package
+
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.Default()
+	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		// your custom format
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC1123),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	}))
+
+	//
+
+	// Server
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      r,
+		ReadTimeout:  time.Duration(cfg.ServerConfig.ReadTimeoutSecs) * time.Second,
+		WriteTimeout: time.Duration(cfg.ServerConfig.WriteTimeoutSecs) * time.Second,
+	}
+	//
+
+	rootRouter := r.Group(cfg.ServerConfig.RoutePrefix) // starts with route prefix
+
+	/*categoryRouter := rootRouter.Group("/categories")
+	productRouter := rootRouter.Group("/products")*/
+
+	// ProductCategory Repository
+	/*productCategoryRepo := productCategory.NewRepository(DB)
+	productCategoryRepo.Migration()*/
+
 	//User Repository
 	userRepo := user.NewRepository(DB)
 	userRepo.Migration()
 
+	//Customer Repository
 	customerRepo := customer.NewRepository(DB)
 	customerRepo.Migration()
 
+	authRepo := auth.NewAuthRepository(DB)
+	authService := auth.NewAuthService(authRepo)
+	auth.NewAuthHandler(rootRouter, cfg, authService)
+
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	log.Println("Book store service started")
+	graceful.ShutdownGin(srv, time.Duration(cfg.ServerConfig.TimeoutSecs*int64(time.Second)))
+
+}
+
+func abc(c *gin.Context) {
+	c.JSON(http.StatusOK, "abc")
 }
