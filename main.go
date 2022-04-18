@@ -8,8 +8,10 @@ import (
 
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/auth"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/customer"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/order"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/product"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/productCategory"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/shoppingCart"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/user"
 	"github.com/gin-gonic/gin"
 
@@ -85,6 +87,16 @@ func main() {
 	productRepo.Migration()
 	productService := product.NewProductService(productRepo)
 	product.NewProductHandler(rootRouter, cfg, productService)
+
+	shoppingCartRepo := shoppingCart.NewRepository(DB)
+	shoppingCartRepo.Migration()
+	shoppingCartService := shoppingCart.NewShoppingCartService(shoppingCartRepo)
+	shoppingCart.NewShoppingCartHandler(rootRouter, cfg, shoppingCartService)
+
+	orderRepo := order.NewRepository(DB)
+	orderRepo.Migration()
+	orderService := order.NewOrderService(orderRepo)
+	order.NewOrderHandler(rootRouter, cfg, orderService)
 
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
