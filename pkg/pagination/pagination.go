@@ -1,11 +1,9 @@
 package pagination
 
 import (
-	"math"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // Decleare default and max page size
@@ -88,30 +86,4 @@ func (p *Pagination) GetSorting() string {
 		p.Sorting = "ID desc"
 	}
 	return p.Sorting
-}
-
-func (p *Pagination) Paginate(value interface{}, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
-	var totalRows int64
-	db.Model(value).Count(&totalRows)
-
-	p.TotalRows = totalRows
-	totalPages := int(math.Ceil(float64(totalRows) / float64(p.GetPageSize())))
-	p.TotalPages = totalPages
-
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Offset(p.GetOffset()).Limit(p.GetPageSize()).Order(p.GetSorting()) // Q: start from offset, fetch as limit, sort as sorting
-	}
-}
-
-func (p *Pagination) PaginateWithRawSql(value interface{}, query string, db *gorm.DB) func(db *gorm.DB) *gorm.DB {
-	var totalRows int64
-	db.Model(value).Count(&totalRows)
-
-	p.TotalRows = totalRows
-	totalPages := int(math.Ceil(float64(totalRows) / float64(p.GetPageSize())))
-	p.TotalPages = totalPages
-
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Raw(query)
-	}
 }
