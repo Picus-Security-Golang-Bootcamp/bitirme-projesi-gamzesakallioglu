@@ -12,17 +12,9 @@ type Repository interface {
 	GetCustomer(ctx context.Context, email *string, password *string) *models.Customer
 	GetUser(ctx context.Context, email *string, password *string) *models.User
 	CheckCustomerExists(ctx context.Context, email *string) *models.Customer
+	CheckUserExists(ctx context.Context, email *string) *models.User
 	CreateCustomer(ctx context.Context, customer *models.Customer) error
 	CreateUser(ctx context.Context, user *models.User) error
-	/*GetUser(ctx context.Context, id string) *Customer
-	// GetByCustomerId returns the basket with the specified customer Id.
-	GetByCustomerId(ctx context.Context, customerId string) *Basket
-	// Create saves a new basket in the storage.
-	Create(ctx context.Context, basket *Basket) error
-	// Update updates the basket with given Is in the storage.
-	Update(ctx context.Context, basket Basket) error
-	// Delete removes the basket with given Is from the storage.
-	Delete(ctx context.Context, basket Basket) error*/
 }
 
 type authRepository struct {
@@ -61,6 +53,14 @@ func (a authRepository) CheckCustomerExists(ctx context.Context, email *string) 
 	return customer
 }
 
+func (a authRepository) CheckUserExists(ctx context.Context, email *string) *models.User {
+	var user *models.User
+	if err := a.db.WithContext(ctx).Where("email = ?", *email).First(&user).Error; err != nil {
+		return nil
+	}
+	return user
+}
+
 func (a authRepository) CreateCustomer(ctx context.Context, customer *models.Customer) error {
 	// if there is a customer has the same email - already checked in the service. Only insert
 	result := a.db.Select("Id", "Name", "Email", "Password", "Address", "Phone").Create(&customer)
@@ -73,7 +73,7 @@ func (a authRepository) CreateCustomer(ctx context.Context, customer *models.Cus
 
 func (a authRepository) CreateUser(ctx context.Context, user *models.User) error {
 	// if there is a customer has the same email - already checked in the service. Only insert
-	result := a.db.Select("Id", "Name", "Email", "Password", "Phone").Create(&user)
+	result := a.db.Select("Id", "Name", "Email", "Password", "Phone", "user_role").Create(&user)
 	if result != nil {
 		return result.Error
 	}

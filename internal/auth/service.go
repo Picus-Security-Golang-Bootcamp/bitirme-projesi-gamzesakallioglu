@@ -7,6 +7,7 @@ import (
 
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/api"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/models"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/utils"
 )
 
 type authService struct {
@@ -17,6 +18,7 @@ type Service interface {
 	GetCustomer(ctx context.Context, email *string, password *string) (*models.Customer, error)
 	GetUser(ctx context.Context, email *string, password *string) (*models.User, error)
 	CheckCustomerExists(ctx context.Context, email *string) (*models.Customer, error)
+	CheckUserExists(ctx context.Context, email *string) (*models.User, error)
 	CreateCustomer(ctx context.Context, customer *api.CustomerSignUp) (*models.Customer, error)
 	CreateUser(ctx context.Context, customer *api.UserSignUp) (*models.User, error)
 }
@@ -30,20 +32,24 @@ func NewAuthService(repo Repository) Service {
 }
 
 func (a authService) GetCustomer(ctx context.Context, email *string, password *string) (*models.Customer, error) {
+	passwordEncoded := utils.GetMD5Hash(password)
+
 	if len(*email) == 0 {
 		return nil, fmt.Errorf("email cannot be empty")
 	}
 
-	customer := a.repo.GetCustomer(ctx, email, password)
+	customer := a.repo.GetCustomer(ctx, email, &passwordEncoded)
 	return customer, nil
 }
 
 func (a authService) GetUser(ctx context.Context, email *string, password *string) (*models.User, error) {
+	passwordEncoded := utils.GetMD5Hash(password)
+
 	if len(*email) == 0 {
 		return nil, fmt.Errorf("email cannot be empty")
 	}
 
-	user := a.repo.GetUser(ctx, email, password)
+	user := a.repo.GetUser(ctx, email, &passwordEncoded)
 	return user, nil
 }
 
@@ -56,13 +62,23 @@ func (a authService) CheckCustomerExists(ctx context.Context, email *string) (*m
 	return customer, nil
 }
 
+func (a authService) CheckUserExists(ctx context.Context, email *string) (*models.User, error) {
+	if len(*email) == 0 {
+		return nil, fmt.Errorf("email cannot be empty")
+	}
+
+	user := a.repo.CheckUserExists(ctx, email)
+	return user, nil
+}
+
 func (a authService) CreateCustomer(ctx context.Context, customer *api.CustomerSignUp) (*models.Customer, error) {
 
+	passwordEncoded := utils.GetMD5Hash(customer.Password)
 	customerToGo := models.Customer{
 		Name:     customer.Name,
 		Email:    customer.Email,
 		Address:  customer.Address,
-		Password: customer.Password,
+		Password: &passwordEncoded,
 		Phone:    customer.Phone,
 	}
 	customerExisted, err := a.CheckCustomerExists(ctx, customer.Email)
@@ -86,19 +102,21 @@ func (a authService) CreateCustomer(ctx context.Context, customer *api.CustomerS
 
 func (a authService) CreateUser(ctx context.Context, user *api.UserSignUp) (*models.User, error) {
 
+	passwordEncoded := utils.GetMD5Hash(user.Password)
 	userToGo := models.User{
 		Name:     user.Name,
 		Email:    user.Email,
-		Password: user.Password,
+		Password: &passwordEncoded,
 		Phone:    user.Phone,
+		UserRole: user.Role,
 	}
-	customerExisted, err := a.CheckCustomerExists(ctx, user.Email)
+	userExisted, err := a.CheckUserExists(ctx, user.Email)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if customerExisted != nil {
+	if userExisted != nil {
 		return nil, errors.New("this email already taken by another user")
 	}
 

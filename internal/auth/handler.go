@@ -8,7 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/httpErrors"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/api"
-	mwUserAdmin "github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/middleware/customer"
+	mwUserAdmin "github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/middleware/userAdmin"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/config"
 	jwtHelper "github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/jwt"
 	"github.com/gin-gonic/gin"
@@ -180,18 +180,3 @@ func (a *authHandler) VerifyToken(c *gin.Context) {
 
 	c.JSON(http.StatusOK, decodedClaims)
 }
-
-/*
-
-{
-    "name": "Dell PC",
-    "description": "Dell PC 15.6 inches",
-    "stockCode": "TECHA1B50001",
-    "stockNumber": 5000,
-    "price": 2000.5,
-    "category": {"id": "2c5c2c18-de40-459a-bd19-787f46140e43", "name": "Electronics"}
-}
-
-
-
-*/
