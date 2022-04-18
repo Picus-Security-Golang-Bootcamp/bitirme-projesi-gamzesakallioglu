@@ -1,4 +1,5 @@
 Basket service developed with Golang.     
+You can use the endpoints above to use this application.
 
 **Sign-up & Sign-in**
 
