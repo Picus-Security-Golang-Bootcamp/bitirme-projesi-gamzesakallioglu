@@ -33,6 +33,9 @@ type UserSignUp struct {
 
 	// phone
 	Phone string `json:"phone,omitempty"`
+
+	// role
+	Role string `json:"role,omitempty"`
 }
 
 // Validate validates this user sign up
