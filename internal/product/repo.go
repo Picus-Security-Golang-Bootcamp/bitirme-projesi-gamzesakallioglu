@@ -15,6 +15,7 @@ type Repository interface {
 	UpdateStockNumber(ctx context.Context, id *string, stockNumber int) error
 	GetAllProducts(ctx context.Context, pagesize int, page int, sorting string) (*models.Products, int64)
 	DeleteProductByID(ctx context.Context, id *string) error
+	UpdateProductByID(ctx context.Context, id *string, productUpdated *models.Product) error
 	Migration()
 }
 
@@ -43,6 +44,14 @@ func (p *productRepository) SearchProducts(ctx context.Context, key *string, pag
 	p.db.Where("name LIKE ?", keyToWrite).Or("stock_code LIKE ?", keyToWrite).Offset(offset).Limit(pageSize).Order(sorting).Preload("Category").Find(&products).Count(&totalcount)
 
 	return products, totalcount
+}
+
+func (p *productRepository) UpdateProductByID(ctx context.Context, id *string, productUpdated *models.Product) error {
+
+	if err := p.db.Where("id = ?", id).Updates(productUpdated).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *productRepository) DeleteProductByID(ctx context.Context, id *string) error {

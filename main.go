@@ -8,6 +8,7 @@ import (
 
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/auth"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/customer"
+	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/product"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/productCategory"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/user"
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,6 @@ import (
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/config"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/db"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/graceful"
-	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/pkg/logger"
 )
 
 func main() {
@@ -26,11 +26,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("environment variables could not be set %v", err)
 	}
-	//
-
-	// Set logger
-	logger.NewLogger(cfg)
-	defer logger.Close()
 	//
 
 	// Connect to DB
@@ -69,13 +64,6 @@ func main() {
 
 	rootRouter := r.Group(cfg.ServerConfig.RoutePrefix) // starts with route prefix
 
-	/*categoryRouter := rootRouter.Group("/categories")
-	productRouter := rootRouter.Group("/products")*/
-
-	// ProductCategory Repository
-	/*productCategoryRepo := productCategory.NewRepository(DB)
-	productCategoryRepo.Migration()*/
-
 	//User Repository
 	userRepo := user.NewRepository(DB)
 	userRepo.Migration()
@@ -92,6 +80,11 @@ func main() {
 	productCategoryRepo.Migration()
 	productCategoryService := productCategory.NewProductCategoryService(productCategoryRepo)
 	productCategory.NewProductCategoryHandler(rootRouter, cfg, productCategoryService)
+
+	productRepo := product.NewRepository(DB)
+	productRepo.Migration()
+	productService := product.NewProductService(productRepo)
+	product.NewProductHandler(rootRouter, cfg, productService)
 
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below

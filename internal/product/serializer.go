@@ -4,6 +4,7 @@ import (
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/api"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/models"
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/internal/productCategory"
+	"github.com/shopspring/decimal"
 )
 
 func ProductsToResponses(pcs *models.Products) []*api.Product {
@@ -29,4 +30,12 @@ func ProductToResponse(p *models.Product) *api.Product {
 		StockNumber: int64(p.StockNumber),
 		Category:    productCategory.ProductCategoryToResponse(&p.Category),
 	}
+}
+
+func ResponseToProduct(p *api.Product) *models.Product {
+
+	price := decimal.NewFromFloat(p.Price)
+
+	return &models.Product{Name: p.Name, Description: p.Description, Price: price, StockNumber: int(p.StockNumber), StockCode: p.StockCode, CategoryID: p.Category.ID}
+
 }

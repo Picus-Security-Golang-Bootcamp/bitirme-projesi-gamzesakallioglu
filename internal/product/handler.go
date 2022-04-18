@@ -1,7 +1,6 @@
 package product
 
 import (
-	"mime/multipart"
 	"net/http"
 
 	"github.com/gamze.sakallioglu/learningGo/bitirme-projesi-gamzesakallioglu/httpErrors"
@@ -13,10 +12,6 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
-type Form struct {
-	File *multipart.FileHeader `form:"file" binding:"required"`
-}
-
 type productHandler struct {
 	cfg     *config.Config
 	service Service
@@ -26,10 +21,40 @@ func NewProductHandler(r *gin.RouterGroup, cfg *config.Config, service Service) 
 	productHandler := productHandler{cfg: cfg, service: service}
 
 	r.POST("/products", mwUserAdmin.AuthMiddleware(cfg.JWTConfig.SecretKey), productHandler.createProduct)
+	r.PUT("/products/:id", mwUserAdmin.AuthMiddleware(cfg.JWTConfig.SecretKey), productHandler.updateProductByID)
 	r.GET("/products", productHandler.getAllProducts)
 	r.GET("/products/:key", productHandler.searchProducts)
 	r.DELETE("products/:id", mwUserAdmin.AuthMiddleware(cfg.JWTConfig.SecretKey), productHandler.deleteProductByID)
 
+}
+
+func (p *productHandler) updateProductByID(c *gin.Context) {
+
+	id := c.Param("id")
+	if len(id) <= 0 {
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "id cannot be null", nil)))
+		return
+	}
+
+	var productUpdated api.Product
+	if err := c.Bind(&productUpdated); err != nil {
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, "something's wrong! check your request body", nil)))
+		return
+	}
+
+	format := strfmt.Default
+	err := productUpdated.Validate(format)
+	if err != nil {
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, err.Error(), nil)))
+		return
+	}
+
+	err = p.service.UpdateProductByID(c.Request.Context(), &id, &productUpdated)
+	if err != nil {
+		c.JSON(httpErrors.ErrorResponse(httpErrors.NewRestError(http.StatusBadRequest, err.Error(), nil)))
+		return
+	}
+	c.JSON(http.StatusOK, "product has been updated")
 }
 
 func (p *productHandler) searchProducts(c *gin.Context) {

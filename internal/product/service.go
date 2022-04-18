@@ -22,6 +22,7 @@ type Service interface {
 	SearchProducts(ctx context.Context, key *string, pageSize int, page int) (*pagination.Pagination, error)
 	GetAllProducts(ctx context.Context, pageSize int, page int) (*pagination.Pagination, error)
 	DeleteProductByID(ctx context.Context, id *string) error
+	UpdateProductByID(ctx context.Context, id *string, productUpdated *api.Product) error
 }
 
 func NewProductService(repo Repository) Service {
@@ -48,6 +49,25 @@ func (p *productService) SearchProducts(ctx context.Context, key *string, pageSi
 
 }
 
+func (p *productService) UpdateProductByID(ctx context.Context, id *string, productUpdated *api.Product) error {
+
+	cat, err := p.GetProductByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if cat == nil {
+		return errors.New("product doesn't exist")
+	}
+
+	productUpdatedApi := ResponseToProduct(productUpdated)
+	err = p.repo.UpdateProductByID(ctx, id, productUpdatedApi)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *productService) DeleteProductByID(ctx context.Context, id *string) error {
 
 	cat, err := p.GetProductByID(ctx, id)
@@ -55,7 +75,7 @@ func (p *productService) DeleteProductByID(ctx context.Context, id *string) erro
 		return err
 	}
 	if cat == nil {
-		return errors.New("category doesn't exist")
+		return errors.New("product doesn't exist")
 	}
 
 	err = p.repo.DeleteProductByID(ctx, id)

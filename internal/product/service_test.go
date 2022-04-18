@@ -284,7 +284,19 @@ func (m *mockRepository) GetProductByName(ctx context.Context, name *string) (*m
 }
 
 func (m *mockRepository) UpdateStockNumber(ctx context.Context, id *string, stockNumber int) error {
-	return nil
+	if len(*id) <= 0 {
+		return nil
+	}
+
+	for i, product := range m.items {
+
+		if product.ID.String() == *id {
+			product.StockNumber = stockNumber
+			m.items[i] = product
+			return nil
+		}
+	}
+	return errors.New("product not found")
 }
 
 func (m *mockRepository) GetAllProducts(ctx context.Context, pagesize int, page int, sorting string) (*models.Products, int64) {
@@ -341,7 +353,7 @@ func (m *mockRepository) GetProductByID(ctx context.Context, id *string) (*model
 			return &product, nil
 		}
 	}
-	return nil, errors.New("category not found")
+	return nil, errors.New("product not found")
 }
 
 func (m *mockRepository) SearchProducts(ctx context.Context, key *string, pageSize int, page int, sorting string) (*models.Products, int64) {
@@ -369,6 +381,25 @@ func (m *mockRepository) SearchProducts(ctx context.Context, key *string, pageSi
 	categories := productsToShow[offset:until]
 
 	return &categories, int64(len(productsToShow))
+}
+
+func (m *mockRepository) UpdateProductByID(ctx context.Context, id *string, productUpdated *models.Product) error {
+
+	if len(*id) <= 0 {
+		return nil
+	}
+
+	for i, product := range m.items {
+
+		if product.ID.String() == *id {
+			product.Name = productUpdated.Name
+			product.StockNumber = productUpdated.StockNumber
+			m.items[i] = product
+			return nil
+		}
+	}
+	return errors.New("product not found")
+
 }
 
 func (m *mockRepository) Migration() {
