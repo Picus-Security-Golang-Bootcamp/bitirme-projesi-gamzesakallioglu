@@ -1,10 +1,10 @@
-This application is a basket service with REST API.     
+Basket service developed with Golang.     
 
 **Sign-up & Sign-in**
 
 
 **Sign Up as a customer**         
->localhost:8080/sign-up      
+>localhost:8080/api/v1/sign-up      
 
      Request Body:       
      {            
@@ -18,7 +18,7 @@ This application is a basket service with REST API.
           
                
 **Sign-in as a customer**
->localhost:8080/login     
+>localhost:8080/api/v1/login     
 
     Request Body:
     {
@@ -32,7 +32,7 @@ This request will give a token as a reponse. You can use that token to access en
 
 **Sign-up as a user**                             
 Only admin users can create new users.
->localhost:8080/user/sign-up                      
+>localhost:8080/api/v1/user/sign-up                      
                     
          Request Body:        
          {          
@@ -44,7 +44,7 @@ Only admin users can create new users.
           
           
 **Sign-in as a user**
->localhost:8080/user/login         
+>localhost:8080/api/v1/user/login         
                
          Request Body:        
          {          
@@ -60,7 +60,7 @@ Passwords are stored in table with Md5 hashing.
 Only admin users can create product and product category.                       
 
 In order to create product categories, an admin user should make a POST request to 
->localhost:8080/productCategories  (POST)              
+>localhost:8080/api/v1/productCategories  (POST)              
      
      
 Request body should be a form with a csv file (key: file)        
@@ -69,7 +69,7 @@ This file will be read line by line and will insert the line into database if th
      
 
 In order to create product, an admin user should make a POST request to         
->localhost:8080/products  (POST)             
+>localhost:8080/api/v1/products  (POST)             
 
           Request Body:
           {
@@ -88,7 +88,7 @@ In order to create product, an admin user should make a POST request to
 **Product and Category Listing**       
 There isn’t any authorization middleware to use this endpoint. Both users, customers and guests can        
 list products and product categories. Both endpoints use pagination for better performance.             
->localhost:8080/products (GET)    
+>localhost:8080/api/v1/products (GET)    
 
      {        
         "page": 1,       
@@ -104,7 +104,7 @@ list products and product categories. Both endpoints use pagination for better p
             },......           
        
           
->localhost:8080/productCategories (GET)   
+>localhost:8080/api/v1/productCategories (GET)   
 
      {       
          "page": 1,         
@@ -125,8 +125,8 @@ list products and product categories. Both endpoints use pagination for better p
                               
 **Delete Product & Product Category**      
 Of course, only admin users can delete a product or a product category.     
->localhost:8080/products/:id       
->localhost:8080/productCategories/:id     
+>localhost:8080/api/v1/products/:id       
+>localhost:8080/api/v1/productCategories/:id     
                          
                          
 **Shopping Cart**
@@ -134,7 +134,7 @@ Only customers can access and manage their own shopping cart. They can add an it
                               
                               
 **Add An Item**                   
->localhost:8080/cart  (POST) 
+>localhost:8080/api/v1/cart  (POST) 
 
 
      {      
@@ -147,11 +147,11 @@ Only customers can access and manage their own shopping cart. They can add an it
           
           
 **Delete An Item**   
->localhost:8080/cart/item/:id  (DELETE)             
+>localhost:8080/api/v1/cart/item/:id  (DELETE)             
                     
                     
 **List The Items**     
->localhost:8080/cart   (GET)     
+>localhost:8080/api/v1/cart   (GET)     
                     
                     
 **Order**
@@ -159,7 +159,7 @@ Customers can complete the order with what they have in their shopping cart. The
                               
                               
 **Complete Order**  
->localhost:8080/orders   (POST)     
+>localhost:8080/api/v1/orders   (POST)     
 
     {        
         "phoneNumber": "555 555 55 55",        
@@ -170,11 +170,11 @@ Customers can complete the order with what they have in their shopping cart. The
                     
                     
 **Cancel Order**         
->localhost:8080/orders/cancel/:id   (GET)      
+>localhost:8080/api/v1/orders/cancel/:id   (GET)      
                               
                               
 **List Past Orders**           
->localhost:8080/orders   (GET)           
+>localhost:8080/api/v1/orders   (GET)           
 
     [
      {
